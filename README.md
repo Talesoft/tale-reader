@@ -63,7 +63,6 @@ If no spaces are encountered, it just returns `null`.
 
 Now we want to parse the assignment-operator (`=`) (or rather, validate that it's there)
 ```php
-
 if (!$reader->peekChar('='))
     throw new Exception("Failed to read: Assignment expected");
     
@@ -93,7 +92,6 @@ If you want to add other escaping, use the first parameter of `readString`.
 
 Now you have all parts parsed to make up your actual action
 ```php
-
 echo "Set `$identifier` to `$string`"; //Set `someString` to `some string`
 ```
 
@@ -105,7 +103,6 @@ This was just a small example, Tale Reader is made for loop-parsing.
 ## Build a small tokenizer
 
 ```php
-
 use Tale\Reader;
 
 //Some C-style example code
@@ -216,7 +213,6 @@ var_dump($tokens);
     ['type' => 'blockEnd']
 ]
 */
-
 ```
 
 
@@ -232,7 +228,6 @@ a(href=getUri('/abc', true), title=(title ? title : 'Sorry, no title.'))
 
 To parse this, let's do the following:
 ```php
-
 //Scan Identifier ("a")
 $identifier = $reader->readIdentifier();
 
