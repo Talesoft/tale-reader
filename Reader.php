@@ -143,8 +143,8 @@ class Reader
     public function match($pattern, $modifiers = null, $ignoredSuffixes = null)
     {
 
-        $modifiers = $modifiers ? $modifiers : '';
-        $ignoredSuffixes = $ignoredSuffixes ? $ignoredSuffixes : "\n";
+        $modifiers = $modifiers ?: '';
+        $ignoredSuffixes = $ignoredSuffixes ?: "\n";
 
         $result = preg_match(
             "/^$pattern/$modifiers",
@@ -196,7 +196,7 @@ class Reader
     public function consume($length = null)
     {
 
-        $length = $length ? $length : $this->nextConsumeLength;
+        $length = $length ?: $this->nextConsumeLength;
 
         if ($length === null)
             $this->throwException(
@@ -262,10 +262,16 @@ class Reader
         }, $peekLength);
     }
 
-    public function peekChars($char)
+    public function peekChar($char)
     {
 
-        return in_array($this->peek(), str_split($char), true);
+        return $this->peek() === $char;
+    }
+
+    public function peekChars($chars)
+    {
+
+        return in_array($this->peek(), is_array($chars) ? $chars : str_split($chars), true);
     }
 
     public function peekString($string)
@@ -319,7 +325,7 @@ class Reader
     public function peekAlphaIdentifier(array $allowedChars = null)
     {
 
-        $allowedChars = $allowedChars ? $allowedChars : ['_'];
+        $allowedChars = $allowedChars ?: ['_'];
 
         return $this->peekAlpha() || $this->peekChars($allowedChars);
     }
@@ -393,7 +399,10 @@ class Reader
         } else if (!$this->peekAlphaIdentifier($allowedChars))
             return null;
 
-        return $this->readWhile([$this, 'peekIdentifier']);
+        return $this->readWhile(function($char) use ($allowedChars) {
+
+            return $this->peekIdentifier($allowedChars);
+        });
     }
 
     public function readString(array $escapeSequences = null, $raw = false)
@@ -458,8 +467,8 @@ class Reader
         if (!$this->hasLength())
             return null;
 
-        $breaks = $breaks ? $breaks : [];
-        $brackets = $brackets ? $brackets : static::$expressionBrackets;
+        $breaks = $breaks ?: [];
+        $brackets = $brackets ?: static::$expressionBrackets;
         $expression = '';
         $char = null;
         $bracketStack = [];
