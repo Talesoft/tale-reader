@@ -16,16 +16,13 @@
             "email": "tk@talesoft.io"
         }
     ],
-    "minimum-stability": "dev",
     "require": {
-        "php": ">=5.5.0"
+        "php": ">=5.5.0",
+        "symfony/polyfill-mbstring": "^1.0"
     },
     "autoload": {
         "psr-4": {
             "Tale\\": ""
-        },
-        "files": [
-            "polyfills/mb.php"
-        ]
+        }
     }
 }
