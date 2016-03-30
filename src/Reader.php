@@ -1,6 +1,6 @@
 <?php
 
-namespace Tale;
+namespace Tale\Reader;
 
 use Tale\Reader\LineOffsetTrait;
 use Tale\Reader\PregUtil;
