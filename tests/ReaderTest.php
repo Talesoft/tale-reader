@@ -1,9 +1,9 @@
 <?php
 
-namespace Tale\Test\Di;
+namespace Tale\Reader\Test;
 
-use Tale\Reader;
-use Tale\ReaderException;
+use Tale\Reader\Reader;
+use Tale\Reader\ReaderException;
 
 class ReaderTest extends \PHPUnit_Framework_TestCase
 {

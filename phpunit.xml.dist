@@ -2,7 +2,7 @@
 <phpunit colors="true" bootstrap="./vendor/autoload.php">
     <testsuites>
         <testsuite name="Tale Reader Test Suite">
-            <directory>./Test</directory>
+            <directory>./tests</directory>
         </testsuite>
     </testsuites>
 </phpunit>

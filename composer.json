@@ -22,7 +22,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Tale\\": ""
+            "Tale\\Reader\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tale\\Reader\\Test\\": "tests"
         }
     }
 }

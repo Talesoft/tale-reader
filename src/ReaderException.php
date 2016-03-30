@@ -1,6 +1,6 @@
 <?php
 
-namespace Tale;
+namespace Tale\Reader;
 
 class ReaderException extends \Exception
 {
