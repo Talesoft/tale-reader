@@ -9,11 +9,11 @@ class Reader
 {
     use LineOffsetTrait;
 
-    protected static $defaultEncoding = 'UTF-8';
-    protected static $badCharacters = "\0\r\v";
-    protected static $indentCharacters = "\t ";
-    protected static $quoteCharacters = "\"'`";
-    protected static $expressionBrackets = [
+    protected $defaultEncoding = 'UTF-8';
+    protected $badCharacters = "\0\r\v";
+    protected $indentCharacters = "\t ";
+    protected $quoteCharacters = "\"'`";
+    protected $expressionBrackets = [
         '(' => ')',
         '[' => ']',
         '{' => '}'
@@ -32,7 +32,7 @@ class Reader
     {
 
         $this->input = $input;
-        $this->encoding = $encoding ?: static::$defaultEncoding;
+        $this->encoding = $encoding ?: $this->defaultEncoding;
 
         $this->position = 0;
         $this->line = 0;
@@ -99,7 +99,7 @@ class Reader
     public function normalize()
     {
 
-        $this->input = str_replace(str_split(static::$badCharacters), '', $this->input);
+        $this->input = str_replace(str_split($this->badCharacters), '', $this->input);
 
         return $this;
     }
@@ -289,13 +289,13 @@ class Reader
     public function peekIndentation()
     {
 
-        return $this->peekChars(static::$indentCharacters);
+        return $this->peekChars($this->indentCharacters);
     }
 
     public function peekQuote()
     {
 
-        return $this->peekChars(static::$quoteCharacters);
+        return $this->peekChars($this->quoteCharacters);
     }
 
     public function peekSpace()
@@ -468,7 +468,7 @@ class Reader
             return null;
 
         $breaks = $breaks ?: [];
-        $brackets = $brackets ?: static::$expressionBrackets;
+        $brackets = $brackets ?: $this->expressionBrackets;
         $expression = '';
         $char = null;
         $bracketStack = [];

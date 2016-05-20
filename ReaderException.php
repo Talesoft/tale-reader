@@ -2,6 +2,6 @@
 
 namespace Tale;
 
-class ReaderException extends \Exception
+class ReaderException extends \RuntimeException
 {
 }
