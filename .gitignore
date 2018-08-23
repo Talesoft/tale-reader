@@ -1,9 +1,7 @@
-
+composer.lock
 /.idea
 /vendor
 /docs
-
-.DS_Store
-Thumbs.db
-composer.lock
-phpdoc.xml
+/coverage
+/.phpunit.result.cache
+/coverage.xml
