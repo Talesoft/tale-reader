@@ -90,10 +90,6 @@ class Reader
         $this->nextConsumeLength = 0;
     }
 
-    protected function onConsume(string $bytes): void
-    {
-    }
-
     public function read(int $length = 1): string
     {
         $bytes = $this->peek($length);
@@ -119,6 +115,10 @@ class Reader
         return $this->readWhile(function (string $bytes) use ($callback) {
             return !$callback($bytes);
         }, $peekLength, $inclusive);
+    }
+
+    protected function onConsume(string $bytes): void
+    {
     }
 
     private function expandBuffer(int $length): void
