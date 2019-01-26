@@ -1,30 +1,26 @@
-<?php
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Tale\Reader;
 
-use Psr\Http\Message\StreamInterface;
-use Tale\Reader;
 use Tale\Reader\Text\Location;
+use Tale\ReaderInterface;
 
-class TextReader extends Reader
+final class TextReader implements ReaderInterface
 {
     public const LINE_DELIMITER_LF = "\n";
     public const LINE_DELIMITER_CR = "\r";
     public const LINE_DELIMITER_CRLF = "\r\n";
     public const LINE_DELIMITER_SYSTEM = \PHP_EOL;
 
+    /** @var ReaderInterface */
+    private $reader;
     private $currentLine = 0;
     private $currentOffset = 0;
     private $lineDelimiter;
 
-    public function __construct(
-        StreamInterface $stream,
-        string $lineDelimiter = self::LINE_DELIMITER_LF,
-        int $bufferSize = 1024
-    ) {
-    
-        parent::__construct($stream, $bufferSize);
+    public function __construct(ReaderInterface $reader, string $lineDelimiter = self::LINE_DELIMITER_LF)
+    {
+        $this->reader = $reader;
         $this->lineDelimiter = $lineDelimiter;
     }
 
@@ -57,20 +53,57 @@ class TextReader extends Reader
         return $this->lineDelimiter;
     }
 
-    protected function onConsume(string $bytes): void
+    public function eof(): bool
     {
-        parent::onConsume($bytes);
+        return $this->reader->eof();
+    }
 
+    public function peek(int $length = 1): string
+    {
+        return $this->reader->peek($length);
+    }
+
+    public function consume(int $length = 0): string
+    {
+        $bytes = $this->reader->consume($length);
         $newLines = substr_count($bytes, $this->lineDelimiter);
         if (!$newLines) {
             $this->currentOffset += \strlen($bytes);
-            return;
+            return $bytes;
         }
 
         $this->currentLine += $newLines;
         $this->currentOffset = \strlen($bytes) - (
             strrpos($bytes, $this->lineDelimiter) + \strlen($this->lineDelimiter)
         );
+        return $bytes;
+    }
+
+    public function read(int $length = 1): string
+    {
+        $bytes = $this->peek($length);
+        $this->consume();
+        return $bytes;
+    }
+
+    public function readWhile(callable $callback, int $peekLength = 1, bool $inclusive = false): string
+    {
+        $bytes = '';
+        while (!$this->eof() && ($peekedBytes = $this->peek($peekLength)) !== '' && $callback($peekedBytes)) {
+            $bytes .= $peekedBytes;
+            $this->consume();
+        }
+        if ($inclusive && !$this->eof()) {
+            $this->consume();
+        }
+        return $bytes;
+    }
+
+    public function readUntil(callable $callback, int $peekLength = 1, bool $inclusive = false): string
+    {
+        return $this->readWhile(function (string $bytes) use ($callback) {
+            return !$callback($bytes);
+        }, $peekLength, $inclusive);
     }
 
     public function peekText(string $text): bool

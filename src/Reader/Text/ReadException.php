@@ -5,7 +5,7 @@ namespace Tale\Reader\Text;
 
 use Throwable;
 
-class Exception extends \RuntimeException
+final class ReadException extends \RuntimeException
 {
     /**
      * @var Location
@@ -14,7 +14,7 @@ class Exception extends \RuntimeException
 
     public function __construct(Location $location, string $message = '', int $code = 0, Throwable $previous = null)
     {
-        parent::__construct("$message (at {$location})", $code, $previous);
+        parent::__construct("{$message} (at {$location})", $code, $previous);
         $this->location = $location;
     }
 

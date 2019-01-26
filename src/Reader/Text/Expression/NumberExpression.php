@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace Tale\Reader\BasicSyntax;
+namespace Tale\Reader\Text\Expression;
 
-class NumberValue
+final class NumberExpression
 {
     private $integerPart;
     private $decimalPart;
@@ -28,7 +28,7 @@ class NumberValue
     }
 
     /**
-     * @return int
+     * @return string
      */
     public function getDecimalPart(): string
     {

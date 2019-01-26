@@ -1,42 +1,50 @@
 <?php
 declare(strict_types=1);
 
-namespace Tale\Reader;
+namespace Tale\Reader\Text;
 
-use Tale\Reader\BasicSyntax\NumberValue;
-use Tale\Reader\Text\Exception;
+use Tale\Reader\Text\Expression\NumberExpression;
+use Tale\Reader\TextReader;
 
-class BasicSyntaxReader extends TextReader
+final class ExpressionReader
 {
     public const DEFAULT_ESCAPE_TEXT = '\\';
 
+    /** @var TextReader */
+    private $textReader;
+
+    public function __construct(TextReader $textReader)
+    {
+        $this->textReader = $textReader;
+    }
+
     public function readContainedText(string $openText, string $closeText, string $escapeText = ''): ?string
     {
-        if (!$this->peekText($openText)) {
+        if (!$this->textReader->peekText($openText)) {
             return null;
         }
-        $location = $this->getCurrentLocation();
-        $this->consume();
+        $location = $this->textReader->getCurrentLocation();
+        $this->textReader->consume();
 
         $content = '';
         $closed = false;
-        while (!$this->eof()) {
-            if ($escapeText !== '' && $this->peekText($escapeText.$closeText)) {
-                $this->consume();
+        while (!$this->textReader->eof()) {
+            if ($escapeText !== '' && $this->textReader->peekText($escapeText.$closeText)) {
+                $this->textReader->consume();
                 $content .= $closeText;
                 continue;
             }
 
-            if ($this->peekText($closeText)) {
-                $this->consume();
+            if ($this->textReader->peekText($closeText)) {
+                $this->textReader->consume();
                 $closed = true;
                 break;
             }
-            $content .= $this->read();
+            $content .= $this->textReader->read();
         }
 
         if (!$closed) {
-            throw new Exception($location, "Failed to read unclosed text, {$closeText} not found");
+            throw new ReadException($location, "Failed to read unclosed text, {$closeText} not found");
         }
         return $content;
     }
@@ -73,19 +81,19 @@ class BasicSyntaxReader extends TextReader
 
     public function readIdentifier(): ?string
     {
-        if (!$this->peekAlpha()) {
+        if (!$this->textReader->peekAlpha()) {
             return null;
         }
-        $identifier = $this->readAlpha();
-        if ($this->peekAlphaNumeric()) {
-            $identifier .= $this->readAlphaNumeric();
+        $identifier = $this->textReader->readAlpha();
+        if ($this->textReader->peekAlphaNumeric()) {
+            $identifier .= $this->textReader->readAlphaNumeric();
         }
         return $identifier;
     }
 
-    public function readNumber(?string $decimalDelimiter = '.', ?string $thousandsDelimiter = '_'): ?NumberValue
+    public function readNumber(?string $decimalDelimiter = '.', ?string $thousandsDelimiter = '_'): ?NumberExpression
     {
-        if (!$this->peekDigit() && ($decimalDelimiter === null || !$this->peekText('.'))) {
+        if (!$this->textReader->peekDigit() && ($decimalDelimiter === null || !$this->textReader->peekText('.'))) {
             return null;
         }
 
@@ -93,12 +101,12 @@ class BasicSyntaxReader extends TextReader
             return ctype_digit($byte) || ($thousandsDelimiter !== null && $byte === $thousandsDelimiter);
         };
 
-        $integer = $this->readWhile($isDigit) ?: '0';
+        $integer = $this->textReader->readWhile($isDigit) ?: '0';
         $decimal = '0';
 
-        if ($decimalDelimiter !== null && $this->peekText($decimalDelimiter)) {
-            $this->consume();
-            $decimal = $this->readWhile($isDigit) ?: '0';
+        if ($decimalDelimiter !== null && $this->textReader->peekText($decimalDelimiter)) {
+            $this->textReader->consume();
+            $decimal = $this->textReader->readWhile($isDigit) ?: '0';
         }
 
         if ($thousandsDelimiter !== null) {
@@ -106,6 +114,6 @@ class BasicSyntaxReader extends TextReader
             $decimal = str_replace($thousandsDelimiter, '', $decimal);
         }
 
-        return new NumberValue($integer, $decimal);
+        return new NumberExpression($integer, $decimal);
     }
 }

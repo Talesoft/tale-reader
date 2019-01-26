@@ -4,8 +4,10 @@ declare(strict_types=1);
 namespace Tale\Test\Reader;
 
 use PHPUnit\Framework\TestCase;
-use Tale\Reader;
-use Tale\Stream\MemoryStream;
+use Tale\Reader\StreamReader;
+use Tale\Reader\Text\Location;
+use Tale\Reader\TextReader;
+use function Tale\stream_memory;
 
 /**
  * @coversDefaultClass \Tale\Reader\TextReader
@@ -20,35 +22,89 @@ class TextReaderTest extends TestCase
      */
     public function testConstruct(): void
     {
-        $stream = new MemoryStream();
-        $reader = new Reader\TextReader($stream);
+        $stream = stream_memory();
+        $reader = new TextReader(new StreamReader($stream));
         self::assertSame(0, $reader->getCurrentLine());
         self::assertSame(0, $reader->getCurrentOffset());
-        self::assertSame(Reader\TextReader::LINE_DELIMITER_LF, $reader->getLineDelimiter());
+        self::assertSame(TextReader::LINE_DELIMITER_LF, $reader->getLineDelimiter());
     }
 
     /**
      * @covers ::__construct
      * @covers ::getCurrentLocation
-     * @covers ::onConsume
      */
     public function testGetCurrentLocation(): void
     {
-        $stream = new MemoryStream("some\nmultiline\nstring");
-        $reader = new Reader\TextReader($stream);
+        $stream = stream_memory("some\nmultiline\nstring");
+        $reader = new TextReader(new StreamReader($stream));
         $reader->read(4);
-        self::assertEquals(new Reader\Text\Location(0, 4), $reader->getCurrentLocation());
+        self::assertEquals(new Location(0, 4), $reader->getCurrentLocation());
         $reader->read(1);
-        self::assertEquals(new Reader\Text\Location(1, 0), $reader->getCurrentLocation());
+        self::assertEquals(new Location(1, 0), $reader->getCurrentLocation());
         $reader->read(1);
-        self::assertEquals(new Reader\Text\Location(1, 1), $reader->getCurrentLocation());
+        self::assertEquals(new Location(1, 1), $reader->getCurrentLocation());
 
-        $stream = new MemoryStream("some\nmultiline\nstring");
-        $reader = new Reader\TextReader($stream);
+        $stream = stream_memory("some\nmultiline\nstring");
+        $reader = new TextReader(new StreamReader($stream));
         $reader->read(3);
-        self::assertEquals(new Reader\Text\Location(0, 3), $reader->getCurrentLocation());
+        self::assertEquals(new Location(0, 3), $reader->getCurrentLocation());
         $reader->read(14);
-        self::assertEquals(new Reader\Text\Location(2, 2), $reader->getCurrentLocation());
+        self::assertEquals(new Location(2, 2), $reader->getCurrentLocation());
+    }
+
+    /**
+     * @covers ::__construct
+     * @covers ::peek
+     * @covers ::consume
+     * @covers ::read
+     */
+    public function testRead(): void
+    {
+        $reader = new TextReader(new StreamReader(stream_memory('test')));
+        self::assertSame('t', $reader->read());
+        self::assertSame('es', $reader->read(2));
+        self::assertSame('t', $reader->read());
+    }
+
+    /**
+     * @covers ::__construct
+     * @covers ::peek
+     * @covers ::consume
+     * @covers ::readWhile
+     */
+    public function testReadWhile(): void
+    {
+        $reader = new TextReader(new StreamReader(stream_memory('testtesttesttesttesttesttestteststopabc')));
+        self::assertSame('testtesttesttesttesttesttesttest', $reader->readWhile(function (string $bytes) {
+            return $bytes !== 'stop';
+        }, 4));
+        self::assertSame('stop', $reader->read(4));
+        $reader = new TextReader(new StreamReader(stream_memory('testtesttesttesttesttesttestteststopabc')));
+        self::assertSame('testtesttesttesttesttesttesttest', $reader->readWhile(function (string $bytes) {
+            return $bytes !== 'stop';
+        }, 4, true));
+        self::assertSame('abc', $reader->read(3));
+    }
+
+    /**
+     * @covers ::__construct
+     * @covers ::peek
+     * @covers ::consume
+     * @covers ::readUntil
+     */
+    public function testReadUntil(): void
+    {
+        $reader = new TextReader(new StreamReader(stream_memory('testtesttesttesttesttesttestteststopabc')));
+        self::assertSame('testtesttesttesttesttesttesttest', $reader->readUntil(function (string $bytes) {
+            return $bytes === 'stop';
+        }, 4));
+        self::assertSame('stop', $reader->read(4));
+
+        $reader = new TextReader(new StreamReader(stream_memory('testtesttesttesttesttesttestteststopabc')));
+        self::assertSame('testtesttesttesttesttesttesttest', $reader->readUntil(function (string $bytes) {
+            return $bytes === 'stop';
+        }, 4, true));
+        self::assertSame('abc', $reader->read(3));
     }
 
     /**
@@ -57,8 +113,8 @@ class TextReaderTest extends TestCase
      */
     public function testPeekText(): void
     {
-        $stream = new MemoryStream('test');
-        $reader = new Reader\TextReader($stream);
+        $stream = stream_memory('test');
+        $reader = new TextReader(new StreamReader($stream));
         self::assertTrue($reader->peekText('tes'));
         self::assertFalse($reader->peekText('tas'));
         self::assertTrue($reader->peekText('tes'));
@@ -70,11 +126,11 @@ class TextReaderTest extends TestCase
      */
     public function testPeekNewLine(): void
     {
-        $stream = new MemoryStream("\n");
-        $reader = new Reader\TextReader($stream);
+        $stream = stream_memory("\n");
+        $reader = new TextReader(new StreamReader($stream));
         self::assertTrue($reader->peekNewLine());
-        $stream = new MemoryStream("t\n");
-        $reader = new Reader\TextReader($stream);
+        $stream = stream_memory("t\n");
+        $reader = new TextReader(new StreamReader($stream));
         self::assertFalse($reader->peekNewLine());
     }
 
@@ -87,8 +143,8 @@ class TextReaderTest extends TestCase
      */
     public function testReadLine(string $streamContent, array $expectedLines): void
     {
-        $stream = new MemoryStream($streamContent);
-        $reader = new Reader\TextReader($stream);
+        $stream = stream_memory($streamContent);
+        $reader = new TextReader(new StreamReader($stream));
         $lines = [];
         while (!$reader->eof()) {
             $lines[] = $reader->readLine();
@@ -98,7 +154,7 @@ class TextReaderTest extends TestCase
 
     public function provideNewLineStreams(): \Generator
     {
-        $delimiters = [Reader\TextReader::LINE_DELIMITER_LF, Reader\TextReader::LINE_DELIMITER_CRLF];
+        $delimiters = [TextReader::LINE_DELIMITER_LF, TextReader::LINE_DELIMITER_CRLF];
         foreach ($delimiters as $delim) {
             yield from [
                 ['', []],
@@ -133,28 +189,28 @@ class TextReaderTest extends TestCase
      */
     public function testPeekSpace(): void
     {
-        $stream = new MemoryStream('t');
-        $reader = new Reader\TextReader($stream);
+        $stream = stream_memory('t');
+        $reader = new TextReader(new StreamReader($stream));
         self::assertFalse($reader->peekSpace());
 
-        $stream = new MemoryStream(' ');
-        $reader = new Reader\TextReader($stream);
+        $stream = stream_memory(' ');
+        $reader = new TextReader(new StreamReader($stream));
         self::assertTrue($reader->peekSpace());
 
-        $stream = new MemoryStream("\t");
-        $reader = new Reader\TextReader($stream);
+        $stream = stream_memory("\t");
+        $reader = new TextReader(new StreamReader($stream));
         self::assertTrue($reader->peekSpace());
 
-        $stream = new MemoryStream("\n");
-        $reader = new Reader\TextReader($stream);
+        $stream = stream_memory("\n");
+        $reader = new TextReader(new StreamReader($stream));
         self::assertTrue($reader->peekSpace());
 
-        $stream = new MemoryStream("\r");
-        $reader = new Reader\TextReader($stream);
+        $stream = stream_memory("\r");
+        $reader = new TextReader(new StreamReader($stream));
         self::assertTrue($reader->peekSpace());
 
-        $stream = new MemoryStream("\v");
-        $reader = new Reader\TextReader($stream);
+        $stream = stream_memory("\v");
+        $reader = new TextReader(new StreamReader($stream));
         self::assertTrue($reader->peekSpace());
     }
 
@@ -164,16 +220,16 @@ class TextReaderTest extends TestCase
      */
     public function testPeekAlpha(): void
     {
-        $stream = new MemoryStream('1');
-        $reader = new Reader\TextReader($stream);
+        $stream = stream_memory('1');
+        $reader = new TextReader(new StreamReader($stream));
         self::assertFalse($reader->peekAlpha());
 
-        $stream = new MemoryStream('a');
-        $reader = new Reader\TextReader($stream);
+        $stream = stream_memory('a');
+        $reader = new TextReader(new StreamReader($stream));
         self::assertTrue($reader->peekAlpha());
 
-        $stream = new MemoryStream('%');
-        $reader = new Reader\TextReader($stream);
+        $stream = stream_memory('%');
+        $reader = new TextReader(new StreamReader($stream));
         self::assertFalse($reader->peekAlpha());
     }
 
@@ -183,16 +239,16 @@ class TextReaderTest extends TestCase
      */
     public function testPeekDigit(): void
     {
-        $stream = new MemoryStream('a');
-        $reader = new Reader\TextReader($stream);
+        $stream = stream_memory('a');
+        $reader = new TextReader(new StreamReader($stream));
         self::assertFalse($reader->peekDigit());
 
-        $stream = new MemoryStream('1');
-        $reader = new Reader\TextReader($stream);
+        $stream = stream_memory('1');
+        $reader = new TextReader(new StreamReader($stream));
         self::assertTrue($reader->peekDigit());
 
-        $stream = new MemoryStream('%');
-        $reader = new Reader\TextReader($stream);
+        $stream = stream_memory('%');
+        $reader = new TextReader(new StreamReader($stream));
         self::assertFalse($reader->peekDigit());
     }
 
@@ -202,16 +258,16 @@ class TextReaderTest extends TestCase
      */
     public function testPeekAlphaNumeric(): void
     {
-        $stream = new MemoryStream('a');
-        $reader = new Reader\TextReader($stream);
+        $stream = stream_memory('a');
+        $reader = new TextReader(new StreamReader($stream));
         self::assertTrue($reader->peekAlphaNumeric());
 
-        $stream = new MemoryStream('1');
-        $reader = new Reader\TextReader($stream);
+        $stream = stream_memory('1');
+        $reader = new TextReader(new StreamReader($stream));
         self::assertTrue($reader->peekAlphaNumeric());
 
-        $stream = new MemoryStream('%');
-        $reader = new Reader\TextReader($stream);
+        $stream = stream_memory('%');
+        $reader = new TextReader(new StreamReader($stream));
         self::assertFalse($reader->peekAlphaNumeric());
     }
 
@@ -222,8 +278,8 @@ class TextReaderTest extends TestCase
      */
     public function testReadSpacesAndNonSpaces(): void
     {
-        $stream = new MemoryStream("\t  \t\vtest34563  \t\n");
-        $reader = new Reader\TextReader($stream);
+        $stream = stream_memory("\t  \t\vtest34563  \t\n");
+        $reader = new TextReader(new StreamReader($stream));
         self::assertSame("\t  \t\v", $reader->readSpaces());
         self::assertSame('test34563', $reader->readNonSpaces());
         self::assertSame("  \t\n", $reader->readSpaces());
@@ -236,8 +292,8 @@ class TextReaderTest extends TestCase
      */
     public function testReadAlphaAndNonAlpha(): void
     {
-        $stream = new MemoryStream("\t  \t\vtest34563  \t\n");
-        $reader = new Reader\TextReader($stream);
+        $stream = stream_memory("\t  \t\vtest34563  \t\n");
+        $reader = new TextReader(new StreamReader($stream));
         self::assertSame("\t  \t\v", $reader->readNonAlpha());
         self::assertSame('test', $reader->readAlpha());
         self::assertSame("34563  \t\n", $reader->readNonAlpha());
@@ -250,8 +306,8 @@ class TextReaderTest extends TestCase
      */
     public function testReadDigitAndNonDigit(): void
     {
-        $stream = new MemoryStream("\t  \t\vtest34563  \t\n");
-        $reader = new Reader\TextReader($stream);
+        $stream = stream_memory("\t  \t\vtest34563  \t\n");
+        $reader = new TextReader(new StreamReader($stream));
         self::assertSame("\t  \t\vtest", $reader->readNonDigits());
         self::assertSame('34563', $reader->readDigits());
         self::assertSame("  \t\n", $reader->readNonDigits());
@@ -264,8 +320,8 @@ class TextReaderTest extends TestCase
      */
     public function testReadAlphaNumericAndNonAlphaNumeric(): void
     {
-        $stream = new MemoryStream("\t  \t\vtest34563  \t\n");
-        $reader = new Reader\TextReader($stream);
+        $stream = stream_memory("\t  \t\vtest34563  \t\n");
+        $reader = new TextReader(new StreamReader($stream));
         self::assertSame("\t  \t\v", $reader->readNonAlphaNumeric());
         self::assertSame('test34563', $reader->readAlphaNumeric());
         self::assertSame("  \t\n", $reader->readNonAlphaNumeric());

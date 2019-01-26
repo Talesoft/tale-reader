@@ -3,5 +3,4 @@ composer.lock
 /vendor
 /docs
 /coverage
-/.phpunit.result.cache
-/coverage.xml
+coverage.xml

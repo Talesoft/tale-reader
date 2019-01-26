@@ -4,13 +4,13 @@ declare(strict_types=1);
 namespace Tale\Test\Reader\Text;
 
 use PHPUnit\Framework\TestCase;
-use Tale\Reader;
-use Tale\Stream\MemoryStream;
+use Tale\Reader\Text\Location;
+use Tale\Reader\Text\ReadException;
 
 /**
- * @coversDefaultClass \Tale\Reader\Text\Exception
+ * @coversDefaultClass \Tale\Reader\Text\ReadException
  */
-class ExceptionTest extends TestCase
+class ReadExceptionTest extends TestCase
 {
     /**
      * @covers ::__construct
@@ -18,9 +18,9 @@ class ExceptionTest extends TestCase
      */
     public function testGetLocation(): void
     {
-        $location = new Reader\Text\Location(10, 15);
+        $location = new Location(10, 15);
         $prev = new \RuntimeException();
-        $ex = new Reader\Text\Exception($location, 'Test', 15, $prev);
+        $ex = new ReadException($location, 'Test', 15, $prev);
         self::assertSame($location, $ex->getLocation());
         self::assertSame('Test (at 10:15)', $ex->getMessage());
         self::assertSame(15, $ex->getCode());

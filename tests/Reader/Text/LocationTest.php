@@ -4,8 +4,7 @@ declare(strict_types=1);
 namespace Tale\Test\Reader\Text;
 
 use PHPUnit\Framework\TestCase;
-use Tale\Reader;
-use Tale\Stream\MemoryStream;
+use Tale\Reader\Text\Location;
 
 /**
  * @coversDefaultClass \Tale\Reader\Text\Location
@@ -18,7 +17,7 @@ class LocationTest extends TestCase
      */
     public function testGetLine(): void
     {
-        $location = new Reader\Text\Location(10, 15);
+        $location = new Location(10, 15);
         self::assertSame(10, $location->getLine());
     }
 
@@ -28,7 +27,7 @@ class LocationTest extends TestCase
      */
     public function testGetOffset(): void
     {
-        $location = new Reader\Text\Location(10, 15);
+        $location = new Location(10, 15);
         self::assertSame(15, $location->getOffset());
     }
 
@@ -38,7 +37,7 @@ class LocationTest extends TestCase
      */
     public function testToString(): void
     {
-        $location = new Reader\Text\Location(10, 15);
+        $location = new Location(10, 15);
         self::assertSame('10:15', (string)$location);
     }
 }

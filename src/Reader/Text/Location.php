@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Tale\Reader\Text;
 
-class Location
+final class Location
 {
     /**
      * @var int

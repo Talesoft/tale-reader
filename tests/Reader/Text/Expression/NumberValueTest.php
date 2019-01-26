@@ -1,14 +1,13 @@
 <?php
 declare(strict_types=1);
 
-namespace Tale\Test\Reader\Text;
+namespace Tale\Test\Reader\Text\Expression;
 
 use PHPUnit\Framework\TestCase;
-use Tale\Reader;
-use Tale\Stream\MemoryStream;
+use Tale\Reader\Text\Expression\NumberExpression;
 
 /**
- * @coversDefaultClass \Tale\Reader\BasicSyntax\NumberValue
+ * @coversDefaultClass \Tale\Reader\Text\Expression\NumberExpression
  */
 class NumberValueTest extends TestCase
 {
@@ -18,7 +17,7 @@ class NumberValueTest extends TestCase
      */
     public function testGetIntegerPart(): void
     {
-        $value = new Reader\BasicSyntax\NumberValue('15', '13');
+        $value = new NumberExpression('15', '13');
         self::assertSame('15', $value->getIntegerPart());
     }
 
@@ -28,7 +27,7 @@ class NumberValueTest extends TestCase
      */
     public function testGetDecimalPart(): void
     {
-        $value = new Reader\BasicSyntax\NumberValue('15', '13');
+        $value = new NumberExpression('15', '13');
         self::assertSame('13', $value->getDecimalPart());
     }
 
@@ -38,7 +37,7 @@ class NumberValueTest extends TestCase
      */
     public function testToInt(): void
     {
-        $value = new Reader\BasicSyntax\NumberValue('15', '13');
+        $value = new NumberExpression('15', '13');
         self::assertSame(15, $value->toInt());
     }
 
@@ -48,7 +47,7 @@ class NumberValueTest extends TestCase
      */
     public function testToFloat(): void
     {
-        $value = new Reader\BasicSyntax\NumberValue('15', '13');
+        $value = new NumberExpression('15', '13');
         self::assertSame(15.13, $value->toFloat());
     }
 
@@ -59,15 +58,15 @@ class NumberValueTest extends TestCase
      */
     public function testToString(): void
     {
-        $value = new Reader\BasicSyntax\NumberValue('15', '13');
+        $value = new NumberExpression('15', '13');
         self::assertSame('15.13', $value->toString());
         self::assertSame('15,13', $value->toString(','));
 
-        $value = new Reader\BasicSyntax\NumberValue('15', '0');
+        $value = new NumberExpression('15', '0');
         self::assertSame('15', $value->toString());
         self::assertSame('15', $value->toString(','));
 
-        $value = new Reader\BasicSyntax\NumberValue('15', '13');
+        $value = new NumberExpression('15', '13');
         self::assertSame('15.13', (string)$value);
     }
 }
