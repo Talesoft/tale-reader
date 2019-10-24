@@ -3,9 +3,7 @@
 namespace Tale\Test;
 
 use PHPUnit\Framework\TestCase;
-use Tale\Reader\StreamReader;
 use Tale\Reader\StringReader;
-use function Tale\stream_memory;
 
 /**
  * @coversDefaultClass \Tale\Reader\StringReader

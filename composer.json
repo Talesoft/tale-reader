@@ -21,7 +21,11 @@
     },
     "autoload": {
         "psr-4": {
-            "Tale\\": "src",
+            "Tale\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
             "Tale\\Test\\": "tests"
         }
     }
