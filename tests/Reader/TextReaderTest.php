@@ -325,4 +325,27 @@ class TextReaderTest extends TestCase
         self::assertSame('test34563', $reader->readAlphaNumeric());
         self::assertSame("  \t\n", $reader->readNonAlphaNumeric());
     }
+
+    /**
+     * @covers ::__construct
+     * @covers ::eof
+     */
+    public function testEof(): void
+    {
+        $stream = stream_memory("\t  \t\vtest34563  \t\n");
+        $reader = new TextReader(new StreamReader($stream));
+        self::assertFalse($reader->eof());
+    }
+
+    /**
+     * @covers ::__construct
+     * @covers ::consume
+     */
+    public function testConsume(): void
+    {
+        $rawData = "test34563  \t\n";
+        $stream = stream_memory($rawData);
+        $reader = new TextReader(new StreamReader($stream));
+        self::assertSame($rawData, $reader->consume(20));
+    }
 }
