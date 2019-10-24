@@ -27,12 +27,23 @@ final class StreamReader implements ReaderInterface
      */
     private $nextConsumeLength = 0;
 
+    /**
+     * creates a new streamReader instance.
+     *
+     * @param StreamInterface $stream a PSR-7 stream to read from.
+     * @param int $bufferSize internal buffer size to use.
+     */
     public function __construct(StreamInterface $stream, int $bufferSize = 1024)
     {
         $this->stream = $stream;
         $this->bufferSize = $bufferSize;
     }
 
+    /**
+     * checks if reached end of stream.
+     *
+     * @return bool wheather we´re at the end of the stream or not.
+     */
     public function eof(): bool
     {
         //Expand buffer by one byte, most reliable method I guess (it has an eof check inbuilt)
@@ -40,6 +51,15 @@ final class StreamReader implements ReaderInterface
         return \strlen($this->buffer) <= 0; //There was no way to expand the buffer, basically
     }
 
+    /**
+     * peeks the specified length from the given stream and returns it´s assert string.
+     *
+     * peek won´t move the internal pointer of the stream forward. To move the pointer forward
+     * use consume() after peeking.
+     *
+     * @param int $length the amount of characters to peek (Default: 1).
+     * @return string the peeked string.
+     */
     public function peek(int $length = 1): string
     {
         $this->expandBuffer($length);
@@ -67,6 +87,11 @@ final class StreamReader implements ReaderInterface
         return $consumedBytes;
     }
 
+    /**
+     * expands the internal buffer by the specified bufferSize if it´s below the specified length.
+     *
+     * @param int $length the amount of characters to expand the buffer by
+     */
     private function expandBuffer(int $length): void
     {
         if (\strlen($this->buffer) >= $length || $this->stream->eof()) {
