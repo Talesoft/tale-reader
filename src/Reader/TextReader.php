@@ -12,11 +12,10 @@ final class TextReader implements ReaderInterface
     public const LINE_DELIMITER_CRLF = "\r\n";
     public const LINE_DELIMITER_SYSTEM = \PHP_EOL;
 
-    /** @var ReaderInterface */
-    private $reader;
-    private $currentLine = 0;
-    private $currentOffset = 0;
-    private $lineDelimiter;
+    private ReaderInterface $reader;
+    private int $currentLine = 0;
+    private int $currentOffset = 0;
+    private string $lineDelimiter;
 
     public function __construct(ReaderInterface $reader, string $lineDelimiter = self::LINE_DELIMITER_LF)
     {
@@ -101,9 +100,7 @@ final class TextReader implements ReaderInterface
 
     public function readUntil(callable $callback, int $peekLength = 1, bool $inclusive = false): string
     {
-        return $this->readWhile(function (string $bytes) use ($callback) {
-            return !$callback($bytes);
-        }, $peekLength, $inclusive);
+        return $this->readWhile(fn (string $bytes) => !$callback($bytes), $peekLength, $inclusive);
     }
 
     public function peekText(string $text): bool
@@ -118,9 +115,11 @@ final class TextReader implements ReaderInterface
 
     public function readLine(): string
     {
-        return trim($this->readUntil(function (string $bytes) {
-            return $bytes === $this->lineDelimiter;
-        }, \strlen($this->lineDelimiter), true), self::LINE_DELIMITER_CRLF);
+        return trim($this->readUntil(
+            fn (string $bytes) => $bytes === $this->lineDelimiter,
+            \strlen($this->lineDelimiter),
+            true,
+        ), self::LINE_DELIMITER_CRLF);
     }
 
     public function peekSpace(): bool

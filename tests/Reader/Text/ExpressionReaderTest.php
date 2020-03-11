@@ -6,6 +6,7 @@ use PHPUnit\Framework\TestCase;
 use Tale\Reader\StreamReader;
 use Tale\Reader\Text\Expression\NumberExpression;
 use Tale\Reader\Text\ExpressionReader;
+use Tale\Reader\Text\ReadException;
 use Tale\Reader\TextReader;
 use function Tale\stream_memory;
 
@@ -31,10 +32,10 @@ class ExpressionReaderTest extends TestCase
     /**
      * @covers ::__construct
      * @covers ::readContainedText
-     * @expectedException \Tale\Reader\Text\ReadException
      */
     public function testReadContainedTextThrowsExceptionOnMissingCloseText(): void
     {
+        $this->expectException(ReadException::class);
         $stream = new StreamReader(stream_memory('STARTTEXTSOMEESCAPEENDTEXTACTUALENDTEXDEMACIA'));
         $reader = new ExpressionReader($textReader = new TextReader($stream));
         $reader->readContainedText('STARTTEXT', 'ENDTEXT', 'ESCAPE');

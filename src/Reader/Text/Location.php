@@ -4,14 +4,8 @@ namespace Tale\Reader\Text;
 
 final class Location
 {
-    /**
-     * @var int
-     */
-    private $line;
-    /**
-     * @var int
-     */
-    private $offset;
+    private int $line;
+    private int $offset;
 
     /**
      * TextLocation constructor.

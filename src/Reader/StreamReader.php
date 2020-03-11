@@ -7,25 +7,10 @@ use Psr\Http\Message\StreamInterface;
 
 final class StreamReader implements ReaderInterface
 {
-    /**
-     * @var StreamInterface
-     */
-    private $stream;
-
-    /**
-     * @var string
-     */
-    private $buffer = '';
-
-    /**
-     * @var int
-     */
-    private $bufferSize;
-
-    /**
-     * @var int
-     */
-    private $nextConsumeLength = 0;
+    private StreamInterface $stream;
+    private string $buffer = '';
+    private int $bufferSize;
+    private int $nextConsumeLength = 0;
 
     /**
      * creates a new streamReader instance.
@@ -81,8 +66,10 @@ final class StreamReader implements ReaderInterface
             return '';
         }
         $this->expandBuffer($length);
+        $length = min(strlen($this->buffer), $length);
         $consumedBytes = substr($this->buffer, 0, $length);
-        $this->buffer = substr($this->buffer, $length);
+        $newBuffer = substr($this->buffer, $length);
+        $this->buffer = $newBuffer !== false ? $newBuffer : '';
         $this->nextConsumeLength = 0;
         return $consumedBytes;
     }
@@ -94,9 +81,8 @@ final class StreamReader implements ReaderInterface
      */
     private function expandBuffer(int $length): void
     {
-        if (\strlen($this->buffer) >= $length || $this->stream->eof()) {
-            return;
+        while (\strlen($this->buffer) < $length && !$this->stream->eof()) {
+            $this->buffer .= $this->stream->read($this->bufferSize);
         }
-        $this->buffer .= $this->stream->read($this->bufferSize);
     }
 }

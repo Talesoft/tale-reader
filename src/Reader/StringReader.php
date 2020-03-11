@@ -6,15 +6,8 @@ use Tale\ReaderInterface;
 
 final class StringReader implements ReaderInterface
 {
-    /**
-     * @var string
-     */
-    private $string;
-
-    /**
-     * @var int
-     */
-    private $nextConsumeLength = 0;
+    private string $string;
+    private int $nextConsumeLength = 0;
 
     public function __construct(string $string)
     {

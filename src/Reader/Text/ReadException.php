@@ -6,10 +6,7 @@ use Throwable;
 
 final class ReadException extends \RuntimeException
 {
-    /**
-     * @var Location
-     */
-    private $location;
+    private Location $location;
 
     public function __construct(Location $location, string $message = '', int $code = 0, Throwable $previous = null)
     {

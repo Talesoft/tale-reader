@@ -4,8 +4,8 @@ namespace Tale\Reader\Text\Expression;
 
 final class NumberExpression
 {
-    private $integerPart;
-    private $decimalPart;
+    private string $integerPart;
+    private string $decimalPart;
 
     /**
      * NumberValue constructor.

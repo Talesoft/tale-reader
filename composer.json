@@ -5,6 +5,12 @@
     "description": "A reading library that can read and parse strings and PSR-7 streams",
     "license": "MIT",
     "homepage": "http://docs.talesoft.codes/php/tale/reader",
+    "scripts": {
+        "test": "phpunit",
+        "test:coverage-html": "phpunit --coverage-html=coverage",
+        "lint": "phpcs",
+        "lint:fix": "phpcbf"
+    },
     "authors": [
         {
             "name": "Torben Koehn",
@@ -12,11 +18,13 @@
         }
     ],
     "require": {
-        "php": ">=7.1.0",
+        "php": ">=7.4.0",
+        "ext-ctype": "*",
         "psr/http-message": "^1.0"
     },
     "require-dev": {
-        "talesoft/tale-dev-tool": "dev-master",
+        "phpunit/phpunit": "^8.4",
+        "squizlabs/php_codesniffer": "^3.5",
         "talesoft/tale-stream": "dev-master"
     },
     "autoload": {

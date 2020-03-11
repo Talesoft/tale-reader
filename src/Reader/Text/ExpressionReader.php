@@ -9,8 +9,7 @@ final class ExpressionReader
 {
     public const DEFAULT_ESCAPE_TEXT = '\\';
 
-    /** @var TextReader */
-    private $textReader;
+    private TextReader $textReader;
 
     public function __construct(TextReader $textReader)
     {
@@ -96,9 +95,8 @@ final class ExpressionReader
             return null;
         }
 
-        $isDigit = function (string $byte) use ($thousandsDelimiter) {
-            return ctype_digit($byte) || ($thousandsDelimiter !== null && $byte === $thousandsDelimiter);
-        };
+        $isDigit = fn (string $byte) =>
+            ctype_digit($byte) || ($thousandsDelimiter !== null && $byte === $thousandsDelimiter);
 
         $integer = $this->textReader->readWhile($isDigit) ?: '0';
         $decimal = '0';
